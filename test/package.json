@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "gulp-include": "~0.2.2",
+    "gulp-util": "~2.2.10"
+  }
+}
