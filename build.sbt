@@ -2,7 +2,7 @@ sbtPlugin := true
 
 organization := "net.valraiso.sbt"
 
-name := "sbt-include"
+name := "sbt-gulp-include"
 
 version := "0.1.0-SNAPSHOT"
 

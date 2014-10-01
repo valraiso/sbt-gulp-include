@@ -14,6 +14,7 @@ object Import {
   val gulpInclude = TaskKey[Pipeline.Stage]("gulpInclude", "gulp-include plugin")
 
   object gulpIncludeKeys {
+    val appDir = SettingKey[File]("gulpInclude-app-dir", "Where gulpInclude will read from. It likes to have all the files in one place.")
     val buildDir = SettingKey[File]("gulpInclude-build-dir", "Where gulp-include will build files.")
     val extensions = SettingKey[String]("gulpInclude-extensions", "all inclusions that does not match the extension(s) will be ignored")
   }
@@ -36,6 +37,7 @@ object SbtgulpInclude extends AutoPlugin {
   import gulpIncludeKeys._
 
   override def projectSettings = Seq(
+    appDir := (resourceManaged in gulpInclude).value / "app",
     buildDir := (resourceManaged in gulpInclude).value / "build",
     extensions := "",
     excludeFilter in gulpInclude := HiddenFileFilter,
@@ -54,10 +56,8 @@ object SbtgulpInclude extends AutoPlugin {
       SbtWeb.syncMappings(
         streams.value.cacheDirectory,
         gulpIncludeMappings,
-        buildDir.value
+        appDir.value
       )
-
-      val buildMappings = gulpIncludeMappings.map(o => buildDir.value / o._2)
 
       val cacheDirectory = streams.value.cacheDirectory / gulpInclude.key.label
       val runUpdate = FileFunction.cached(cacheDirectory, FilesInfo.hash) {
@@ -65,7 +65,7 @@ object SbtgulpInclude extends AutoPlugin {
           streams.value.log.info("gulpInclude")
 
           val sourceFileMappings = JsArray(inputFiles.filter(_.isFile).map { f =>
-            val relativePath = IO.relativize(buildDir.value, f).get
+            val relativePath = IO.relativize(appDir.value, f).get
             JsArray(JsString(f.getPath), JsString(relativePath))
           }.toList).toString()
 
@@ -93,7 +93,7 @@ object SbtgulpInclude extends AutoPlugin {
           buildDir.value.***.get.filter(!_.isDirectory).toSet
       }
 
-      val gulpIncludedMappings = runUpdate(buildMappings.toSet).pair(relativeTo(buildDir.value))
+      val gulpIncludedMappings = runUpdate(appDir.value.***.get.toSet).filter(_.isFile).pair(relativeTo(buildDir.value))
       (mappings.toSet -- gulpIncludeMappings ++ gulpIncludedMappings).toSeq
   }
 
