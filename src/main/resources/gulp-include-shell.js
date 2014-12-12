@@ -6,9 +6,9 @@
 
   var args = process.argv,
       fs = require("fs"),
-      Q = require('q'),
       nodefn = require("when/node"),
       mkdirp = require("mkdirp"),
+      Q = require('q'),
       path = require("path"),
       gutil = require("gulp-util"),
       include = require("gulp-include");

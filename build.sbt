@@ -10,8 +10,7 @@ scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
   "org.webjars" % "mkdirp" % "0.3.5",
-  "org.webjars" % "when-node" % "3.2.2",
-  "org.webjars" % "q" % "2.0.0"
+  "org.webjars" % "when-node" % "3.2.2"
 )
 
 resolvers ++= Seq(
@@ -24,15 +23,12 @@ resolvers ++= Seq(
 
 addSbtPlugin("com.typesafe.sbt" %% "sbt-js-engine" % "1.0.0")
 
-publishMavenStyle := false
+publishMavenStyle := true
 
-publishTo := {
-  if (isSnapshot.value) Some(Classpaths.sbtPluginSnapshots)
-  else Some(Classpaths.sbtPluginReleases)
-}
+publishTo := Some(Resolver.file("file",  new File( Path.userHome.absolutePath+"/dev/apps/valraiso.github.com/releases" )) )
 
 scriptedSettings
 
-scriptedBufferLog := false
+scriptedBufferLog := true
 
 scriptedLaunchOpts <+= version apply { v => s"-Dproject.version=$v" }

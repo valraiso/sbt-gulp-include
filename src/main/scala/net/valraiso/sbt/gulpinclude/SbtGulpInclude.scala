@@ -43,7 +43,7 @@ object SbtgulpInclude extends AutoPlugin {
     excludeFilter in gulpInclude := HiddenFileFilter,
     includeFilter in gulpInclude := GlobFilter("*.html"),
     resourceManaged in gulpInclude := webTarget.value / gulpInclude.key.label,
-    gulpInclude := runGulpInclude.dependsOn(webModules in Assets).dependsOn(WebKeys.nodeModules in Assets).value
+    gulpInclude := runGulpInclude.dependsOn(webModules in Assets, nodeModules in Assets, webJarsNodeModules in Plugin).value
   )
 
   private def runGulpInclude: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
@@ -62,7 +62,11 @@ object SbtgulpInclude extends AutoPlugin {
       val cacheDirectory = streams.value.cacheDirectory / gulpInclude.key.label
       val runUpdate = FileFunction.cached(cacheDirectory, FilesInfo.hash) {
         inputFiles =>
+
           streams.value.log.info("gulpInclude")
+
+          val nodeModulePaths = (nodeModuleDirectories in Plugin).value.map(_.getPath)
+
 
           val sourceFileMappings = JsArray(inputFiles.filter(_.isFile).map { f =>
             val relativePath = IO.relativize(appDir.value, f).get
@@ -84,7 +88,7 @@ object SbtgulpInclude extends AutoPlugin {
             state.value,
             (engineType in gulpInclude).value,
             (command in gulpInclude).value,
-            (nodeModuleDirectories in Plugin).value.map(_.getPath),            
+            nodeModulePaths,
             shellFile,
             Seq(sourceFileMappings, targetPath, jsOptions),
             (timeoutPerSource in gulpInclude).value * gulpIncludeMappings.size
